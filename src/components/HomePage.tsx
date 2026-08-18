@@ -9,92 +9,82 @@ interface HomePageProps {
 }
 
 export function HomePage({ onNavigate }: HomePageProps) {
-  // Conference date: September 12, 2026 at 8:00 AM
   const conferenceDate = new Date('2026-09-12T08:00:00');
 
   return (
     <div>
-      {/* Hero Section */}
-      <section className="relative bg-white overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.04]">
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-corporate-600 rounded-full blur-3xl transform translate-x-1/3 -translate-y-1/3" />
-          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-corporate-600 rounded-full blur-3xl transform -translate-x-1/3 translate-y-1/3" />
-        </div>
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
-          <div className="text-center">
-            <div className="inline-flex items-center gap-2 bg-corporate-50 border border-corporate-200 rounded-full px-4 py-2 mb-6">
-              <span className="w-2 h-2 rounded-full bg-corporate-600" />
-              <span className="text-corporate-700 text-sm font-medium">Ambitus World School Presents</span>
-            </div>
-
-            <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-corporate-950 mb-4 leading-tight">
-              Ambitus World School
-              <br />
-              <span className="text-corporate-600">Model United Nations</span>
-            </h1>
-
-            <p className="text-lg sm:text-xl text-corporate-700 max-w-2xl mx-auto mb-6 font-medium">
-              AWSMUN 2026
-            </p>
-
-            <div className="inline-flex flex-wrap items-center justify-center gap-2 bg-corporate-50 border border-corporate-200 rounded-full px-4 py-2 mb-8">
-              <Calendar className="w-4 h-4 text-corporate-600" />
-              <span className="text-corporate-700 text-sm font-medium">September 12-13, 2026</span>
-              <span className="text-corporate-300">|</span>
-              <MapPin className="w-4 h-4 text-corporate-600" />
-              <span className="text-corporate-700 text-sm">Ambitus World School Campus</span>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <button onClick={() => onNavigate('register')} className="btn-primary text-lg px-8 py-4">
-                Register Now
-                <ArrowRight className="inline-block ml-2 w-5 h-5" />
-              </button>
-              <button onClick={() => onNavigate('committees')} className="btn-secondary text-lg px-8 py-4">
-                View Committees
-              </button>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-3xl mx-auto">
-              <div className="bg-white rounded-xl p-5 border border-corporate-100 shadow-sm">
-                <Users className="w-7 h-7 text-corporate-600 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-corporate-950 mb-0.5">300+</div>
-                <div className="text-xs text-corporate-500">Delegates</div>
-              </div>
-              <div className="bg-white rounded-xl p-5 border border-corporate-100 shadow-sm">
-                <Globe className="w-7 h-7 text-corporate-600 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-corporate-950 mb-0.5">5</div>
-                <div className="text-xs text-corporate-500">Committees</div>
-              </div>
-              <div className="bg-white rounded-xl p-5 border border-corporate-100 shadow-sm">
-                <MapPin className="w-7 h-7 text-corporate-600 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-corporate-950 mb-0.5">40+</div>
-                <div className="text-xs text-corporate-500">Countries</div>
-              </div>
-              <div className="bg-white rounded-xl p-5 border border-corporate-100 shadow-sm">
-                <Calendar className="w-7 h-7 text-corporate-600 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-corporate-950 mb-0.5">2</div>
-                <div className="text-xs text-corporate-500">Days</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Countdown Timer on Background Image */}
-      <section className="relative overflow-hidden">
+      {/* Hero Section with Background Image and Centered Countdown */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img
             src={HERO_BG}
             alt=""
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-corporate-950/70" />
+          <div className="absolute inset-0 bg-corporate-950/75" />
         </div>
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
-          <CountdownTimer targetDate={conferenceDate} />
+
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2 mb-6">
+            <span className="w-2 h-2 rounded-full bg-corporate-300" />
+            <span className="text-white/90 text-sm font-medium">Ambitus World School Presents</span>
+          </div>
+
+          <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-4 leading-tight">
+            Ambitus World School
+            <br />
+            <span className="text-corporate-300">Model United Nations</span>
+          </h1>
+
+          <p className="text-lg sm:text-xl text-white/80 max-w-2xl mx-auto mb-6 font-medium">
+            AWSMUN 2026
+          </p>
+
+          <div className="inline-flex flex-wrap items-center justify-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2 mb-10">
+            <Calendar className="w-4 h-4 text-corporate-300" />
+            <span className="text-white/90 text-sm font-medium">September 12-13, 2026</span>
+            <span className="text-white/30">|</span>
+            <MapPin className="w-4 h-4 text-corporate-300" />
+            <span className="text-white/90 text-sm">Ambitus World School Campus</span>
+          </div>
+
+          {/* Countdown Timer — centered as the main element */}
+          <div className="mb-10">
+            <CountdownTimer targetDate={conferenceDate} />
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button onClick={() => onNavigate('register')} className="btn-primary text-lg px-8 py-4">
+              Register Now
+              <ArrowRight className="inline-block ml-2 w-5 h-5" />
+            </button>
+            <button onClick={() => onNavigate('committees')} className="btn-secondary text-lg px-8 py-4 border-white text-white hover:bg-white hover:text-corporate-950">
+              View Committees
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats (without delegate count) */}
+      <section className="py-12 bg-white">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-3 gap-4">
+            <div className="bg-white rounded-xl p-5 border border-corporate-100 shadow-sm text-center">
+              <Globe className="w-7 h-7 text-corporate-600 mx-auto mb-2" />
+              <div className="text-2xl font-bold text-corporate-950 mb-0.5">5</div>
+              <div className="text-xs text-corporate-500">Committees</div>
+            </div>
+            <div className="bg-white rounded-xl p-5 border border-corporate-100 shadow-sm text-center">
+              <MapPin className="w-7 h-7 text-corporate-600 mx-auto mb-2" />
+              <div className="text-2xl font-bold text-corporate-950 mb-0.5">40+</div>
+              <div className="text-xs text-corporate-500">Countries</div>
+            </div>
+            <div className="bg-white rounded-xl p-5 border border-corporate-100 shadow-sm text-center">
+              <Calendar className="w-7 h-7 text-corporate-600 mx-auto mb-2" />
+              <div className="text-2xl font-bold text-corporate-950 mb-0.5">2</div>
+              <div className="text-xs text-corporate-500">Days</div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -195,7 +185,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
             Ready to Make Your Voice Heard?
           </h2>
           <p className="text-lg text-corporate-200 mb-8">
-            Registration is now open. Secure your country assignment today.
+            Registration is now open. Submit your preferences and payment today.
           </p>
           <button
             onClick={() => onNavigate('register')}

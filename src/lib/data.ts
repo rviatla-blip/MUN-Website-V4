@@ -78,4 +78,33 @@ export const countries = [
   'Canada',
 ];
 
+export const personalities = [
+  'Narendra Modi (BJP)',
+  'Rahul Gandhi (INC)',
+  'Mamata Banerjee (TMC)',
+  'Arvind Kejriwal (AAP)',
+  'Nitish Kumar (JDU)',
+  'Sharad Pawar (NCP)',
+  'Mayawati (BSP)',
+  'Akhilesh Yadav (SP)',
+  'Uddhav Thackeray (SHS)',
+  'M.K. Stalin (DMK)',
+  'Y.S. Jagan Mohan Reddy (YSRCP)',
+  'Naveen Patnaik (BJD)',
+  'H.D. Kumaraswamy (JD(S))',
+  'Chandrababu Naidu (TDP)',
+  'Sitaram Yechury (CPI(M))',
+  'Asaduddin Owaisi (AIMIM)',
+  'Parkash Singh Badal (SAD)',
+  'Hemant Soren (JMM)',
+];
+
 export const committeeNames = ['DISEC', 'UNHRC', 'UNCSW', 'IPC', 'AIPPM'];
+
+export function isPersonalityCommittee(committee: string): boolean {
+  return committee === 'AIPPM';
+}
+
+export function getOptionsForCommittee(committee: string): string[] {
+  return isPersonalityCommittee(committee) ? personalities : countries;
+}

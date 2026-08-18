@@ -15,6 +15,8 @@ export type Delegate = {
   email: string;
   school: string;
   phone: string;
+  experience: string | null;
+  is_ambitus_student: boolean;
   preference_1_committee: string;
   preference_1_country: string;
   preference_2_committee: string;
@@ -26,6 +28,8 @@ export type Delegate = {
   assigned_matrix_id: string | null;
   allocation_type: string | null;
   registration_status: string;
+  payment_proof_url: string | null;
+  payment_status: string;
   created_at: string;
 };
 

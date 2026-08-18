@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Download, Users, FileText, ChevronDown, ChevronUp, Globe } from 'lucide-react';
+import { Download, Users, ChevronDown, ChevronUp, Globe } from 'lucide-react';
 import { committees } from '../lib/data';
 import type { Committee } from '../lib/supabase';
 
@@ -20,11 +20,10 @@ export function CommitteesPage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <Globe className="w-12 h-12 text-corporate-600 mx-auto mb-4" />
           <h1 className="font-serif text-4xl sm:text-5xl font-bold text-corporate-950 mb-4">
-            Committees & Agendas
+            Our Committees
           </h1>
           <p className="text-lg text-corporate-700 max-w-2xl mx-auto">
-            Explore our specialized committees, each addressing critical global issues.
-            Select your preferences during registration.
+            Explore our specialized committees. Select your preferences during registration.
           </p>
         </div>
       </section>
@@ -59,15 +58,6 @@ export function CommitteesPage() {
                         <ChevronDown className="w-5 h-5 text-corporate-600" />
                       )}
                     </button>
-                  </div>
-
-                  {/* Agenda */}
-                  <div className="bg-corporate-50 border border-corporate-200 rounded-lg p-4 mb-4">
-                    <div className="flex items-center gap-2 mb-1">
-                      <FileText className="w-4 h-4 text-corporate-600" />
-                      <span className="text-xs font-semibold text-corporate-700 uppercase tracking-wider">Agenda</span>
-                    </div>
-                    <p className="text-corporate-950 font-medium">{committee.agenda}</p>
                   </div>
 
                   {/* Description */}
@@ -128,8 +118,8 @@ export function CommitteesPage() {
               <div className="w-12 h-12 bg-corporate-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-2xl font-bold text-corporate-700">1</span>
               </div>
-              <h4 className="font-semibold text-corporate-950 mb-2">Review Agendas</h4>
-              <p className="text-sm text-corporate-600">Choose topics that align with your interests and knowledge.</p>
+              <h4 className="font-semibold text-corporate-950 mb-2">Review Committees</h4>
+              <p className="text-sm text-corporate-600">Explore each committee to find ones that match your interests.</p>
             </div>
             <div className="p-6 border border-corporate-200 rounded-xl">
               <div className="w-12 h-12 bg-corporate-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -142,8 +132,8 @@ export function CommitteesPage() {
               <div className="w-12 h-12 bg-corporate-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-2xl font-bold text-corporate-700">3</span>
               </div>
-              <h4 className="font-semibold text-corporate-950 mb-2">Get Assigned</h4>
-              <p className="text-sm text-corporate-600">Our system allocates based on availability and preference.</p>
+              <h4 className="font-semibold text-corporate-950 mb-2">Submit & Pay</h4>
+              <p className="text-sm text-corporate-600">Complete your registration with payment and await your assignment.</p>
             </div>
           </div>
         </div>

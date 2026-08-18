@@ -127,14 +127,13 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
             <div>
               <h4 className="font-semibold text-white mb-4">Contact</h4>
               <ul className="space-y-2 text-sm text-gray-300">
-                <li>awsmun@ambitusworldschool.edu</li>
-                <li>+91 (11) 4567-8900</li>
+                <li>mun.vja@ambitusworldschool.com</li>
                 <li>Ambitus World School Campus</li>
               </ul>
             </div>
           </div>
           <div className="border-t border-corporate-800 mt-8 pt-8 text-center text-sm text-gray-400">
-            <p>2026 Ambitus World School Model United Nations. All rights reserved.</p>
+            <p>2026 Ambitus World School Model United Nations — Edition IV. All rights reserved.</p>
           </div>
         </div>
       </footer>

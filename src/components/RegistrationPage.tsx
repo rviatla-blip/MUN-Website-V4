@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import QRCode from 'qrcode';
 import {
-  User, Mail, Phone, School, CheckCircle, AlertCircle, ChevronRight, ChevronLeft,
+  User, Mail, School, CheckCircle, AlertCircle, ChevronRight, ChevronLeft,
   Loader2, Upload, CreditCard, Briefcase, Building2, Globe,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -11,7 +11,6 @@ import {
 import awsmunLogo from '../../public/image.png';
 
 // --- Config ---
-// Replace this with the actual UPI ID for AWSMUN payments
 const UPI_ID = 'awsmun@ambitus';
 const PAYEE_NAME = 'AWSMUN';
 const REGISTRATION_FEE = 'Rs. 1,500';
@@ -39,6 +38,99 @@ type Step = 1 | 2 | 3 | 4 | 5;
 
 interface RegistrationPageProps {
   onComplete: () => void;
+}
+
+// --- PreferenceBlock (top-level component to avoid re-creation on every keystroke) ---
+interface PreferenceBlockProps {
+  prefNum: 1 | 2 | 3;
+  label: string;
+  bgColor: string;
+  borderColor: string;
+  badgeColor: string;
+  formData: FormData;
+  errors: Record<string, string>;
+  updateField: (field: keyof FormData, value: string | boolean | File | null) => void;
+}
+
+function PreferenceBlock({
+  prefNum, label, bgColor, borderColor, badgeColor, formData, errors, updateField,
+}: PreferenceBlockProps) {
+  const committeeKey = `pref${prefNum}Committee` as keyof FormData;
+  const countryKey = `pref${prefNum}Country` as keyof FormData;
+  const customKey = `pref${prefNum}Custom` as keyof FormData;
+
+  const committee = formData[committeeKey] as string;
+  const country = formData[countryKey] as string;
+  const custom = formData[customKey] as string;
+
+  const options = committee ? getOptionsForCommittee(committee) : [];
+  const isPersonality = committee ? isPersonalityCommittee(committee) : false;
+
+  // Committees already selected in other preference slots
+  const allCommittees = [formData.pref1Committee, formData.pref2Committee, formData.pref3Committee];
+  const usedCommittees = allCommittees.filter((c, i) => c !== '' && i !== prefNum - 1);
+
+  return (
+    <div className={`${bgColor} border ${borderColor} rounded-lg p-4`}>
+      <span className={`text-xs font-bold uppercase tracking-wider ${badgeColor}`}>{label}</span>
+      <div className="grid sm:grid-cols-2 gap-4 mt-3">
+        <div>
+          <label className="block text-sm font-medium text-corporate-700 mb-1">Committee</label>
+          <select
+            value={committee}
+            onChange={e => {
+              updateField(committeeKey, e.target.value);
+              updateField(countryKey, '');
+              updateField(customKey, '');
+            }}
+            className="input-field"
+          >
+            <option value="">Select Committee</option>
+            {committeeNames.map(c => (
+              <option key={c} value={c} disabled={usedCommittees.includes(c)}>
+                {c}{usedCommittees.includes(c) ? ' (already selected)' : ''}
+              </option>
+            ))}
+          </select>
+          {errors[committeeKey as string] && <p className="text-red-500 text-sm mt-1">{errors[committeeKey as string]}</p>}
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-corporate-700 mb-1">
+            {isPersonality ? 'Personality' : 'Country / Personality'}
+          </label>
+          <select
+            value={country}
+            onChange={e => {
+              updateField(countryKey, e.target.value);
+              if (e.target.value !== '__custom__') updateField(customKey, '');
+            }}
+            className="input-field"
+            disabled={!committee}
+          >
+            <option value="">{committee ? `Select ${isPersonality ? 'Personality' : 'Country'}` : 'Select committee first'}</option>
+            {options.map(c => <option key={c} value={c}>{c}</option>)}
+            <option value="__custom__">Other (type your own)</option>
+          </select>
+          {errors[countryKey as string] && <p className="text-red-500 text-sm mt-1">{errors[countryKey as string]}</p>}
+        </div>
+      </div>
+      {country === '__custom__' && (
+        <div className="mt-3">
+          <label className="block text-sm font-medium text-corporate-700 mb-1">
+            {isPersonality ? 'Enter Personality Name' : 'Enter Country / Personality Name'}
+          </label>
+          <input
+            type="text"
+            value={custom}
+            onChange={e => updateField(customKey, e.target.value)}
+            className={`input-field ${errors[countryKey as string] && !custom.trim() ? 'border-red-500' : ''}`}
+            placeholder={isPersonality ? 'e.g., Amit Shah (BJP)' : 'e.g., South Korea'}
+          />
+          {errors[countryKey as string] && !custom.trim() && <p className="text-red-500 text-sm mt-1">{errors[countryKey as string]}</p>}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function RegistrationPage({ onComplete }: RegistrationPageProps) {
@@ -71,7 +163,6 @@ export function RegistrationPage({ onComplete }: RegistrationPageProps) {
   const [uploadPreview, setUploadPreview] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Generate UPI QR code on mount and when entering payment step
   const generateQR = async () => {
     const upiString = `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(PAYEE_NAME)}&am=1500&cu=INR&tn=AWSMUN%20Registration`;
     try {
@@ -98,7 +189,6 @@ export function RegistrationPage({ onComplete }: RegistrationPageProps) {
     }
   };
 
-  // --- Validation ---
   const validateStep = (currentStep: Step): boolean => {
     const newErrors: Record<string, string> = {};
 
@@ -108,17 +198,14 @@ export function RegistrationPage({ onComplete }: RegistrationPageProps) {
       else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Invalid email format';
     } else if (currentStep === 2) {
       if (!formData.school.trim()) newErrors.school = 'School is required';
-      if (!formData.phone.trim()) newErrors.phone = 'Phone is required';
       if (!formData.experience.trim()) newErrors.experience = 'Please describe your experience';
     } else if (currentStep === 3) {
-      // Validate each preference
+      const prefNumMap: Record<string, number> = { '1st': 1, '2nd': 2, '3rd': 3 };
       const prefs = [
         { committee: formData.pref1Committee, country: formData.pref1Country, custom: formData.pref1Custom, label: '1st' },
         { committee: formData.pref2Committee, country: formData.pref2Country, custom: formData.pref2Custom, label: '2nd' },
         { committee: formData.pref3Committee, country: formData.pref3Country, custom: formData.pref3Custom, label: '3rd' },
       ];
-
-      const prefNumMap: Record<string, number> = { '1st': 1, '2nd': 2, '3rd': 3 };
 
       prefs.forEach((pref) => {
         const num = prefNumMap[pref.label];
@@ -131,7 +218,7 @@ export function RegistrationPage({ onComplete }: RegistrationPageProps) {
         }
       });
 
-      // Check no repeated committees (each committee only once)
+      // Check no repeated committees
       const seenCommittees: string[] = [];
       prefs.forEach((pref) => {
         const num = prefNumMap[pref.label];
@@ -181,7 +268,6 @@ export function RegistrationPage({ onComplete }: RegistrationPageProps) {
     setStep(prev => Math.max(prev - 1, 1) as Step);
   };
 
-  // --- File upload ---
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -198,7 +284,6 @@ export function RegistrationPage({ onComplete }: RegistrationPageProps) {
     });
   };
 
-  // --- Submit ---
   const handleSubmit = async () => {
     if (!validateStep(4)) return;
 
@@ -206,7 +291,6 @@ export function RegistrationPage({ onComplete }: RegistrationPageProps) {
     setSubmitResult(null);
 
     try {
-      // 1. Upload payment proof to storage
       let paymentProofUrl: string | null = null;
       if (formData.paymentProofFile) {
         const fileExt = formData.paymentProofFile.name.split('.').pop();
@@ -227,7 +311,6 @@ export function RegistrationPage({ onComplete }: RegistrationPageProps) {
         paymentProofUrl = publicUrlData.publicUrl;
       }
 
-      // 2. Resolve country/personality values (custom or selected)
       const resolveCountry = (country: string, custom: string) =>
         country === '__custom__' ? custom.trim() : country;
 
@@ -235,7 +318,6 @@ export function RegistrationPage({ onComplete }: RegistrationPageProps) {
       const pref2Country = resolveCountry(formData.pref2Country, formData.pref2Custom);
       const pref3Country = resolveCountry(formData.pref3Country, formData.pref3Custom);
 
-      // 3. Insert delegate (no auto-allocation)
       const { data: delegate, error: insertError } = await supabase
         .from('delegates')
         .insert({
@@ -268,7 +350,6 @@ export function RegistrationPage({ onComplete }: RegistrationPageProps) {
         return;
       }
 
-      // 4. Sync to Google Sheets (fire and forget — don't block on it)
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       try {
         await fetch(`${supabaseUrl}/functions/v1/sync-to-sheets`, {
@@ -280,7 +361,7 @@ export function RegistrationPage({ onComplete }: RegistrationPageProps) {
           body: JSON.stringify({ delegateId: delegate.id }),
         });
       } catch {
-        // Sheet sync is best-effort; don't fail the registration
+        // Sheet sync is best-effort
       }
 
       setSubmitResult({
@@ -296,90 +377,6 @@ export function RegistrationPage({ onComplete }: RegistrationPageProps) {
   };
 
   const stepLabels = ['Personal Info', 'School & Experience', 'Preferences', 'Payment', 'Confirmation'];
-
-  // --- Preference field component ---
-  const PreferenceBlock = ({
-    prefNum, label, bgColor, borderColor, badgeColor,
-  }: {
-    prefNum: 1 | 2 | 3; label: string; bgColor: string; borderColor: string; badgeColor: string;
-  }) => {
-    const committeeKey = `pref${prefNum}Committee` as keyof FormData;
-    const countryKey = `pref${prefNum}Country` as keyof FormData;
-    const customKey = `pref${prefNum}Custom` as keyof FormData;
-
-    const committee = formData[committeeKey] as string;
-    const country = formData[countryKey] as string;
-    const custom = formData[customKey] as string;
-
-    const options = committee ? getOptionsForCommittee(committee) : [];
-    const isPersonality = committee ? isPersonalityCommittee(committee) : false;
-
-    // Committees already selected in other preference slots
-    const allCommittees = [formData.pref1Committee, formData.pref2Committee, formData.pref3Committee];
-    const usedCommittees = allCommittees.filter((c, i) => c !== '' && i !== prefNum - 1);
-
-    return (
-      <div className={`${bgColor} border ${borderColor} rounded-lg p-4`}>
-        <span className={`text-xs font-bold uppercase tracking-wider ${badgeColor}`}>{label}</span>
-        <div className="grid sm:grid-cols-2 gap-4 mt-3">
-          <div>
-            <label className="block text-sm font-medium text-corporate-700 mb-1">Committee</label>
-            <select
-              value={committee}
-              onChange={e => {
-                updateField(committeeKey, e.target.value);
-                updateField(countryKey, '');
-                updateField(customKey, '');
-              }}
-              className="input-field"
-            >
-              <option value="">Select Committee</option>
-              {committeeNames.map(c => (
-                <option key={c} value={c} disabled={usedCommittees.includes(c)}>
-                  {c}{usedCommittees.includes(c) ? ' (already selected)' : ''}
-                </option>
-              ))}
-            </select>
-            {errors[`${committeeKey}`] && <p className="text-red-500 text-sm mt-1">{errors[`${committeeKey}`]}</p>}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-corporate-700 mb-1">
-              {isPersonality ? 'Personality' : 'Country / Personality'}
-            </label>
-            <select
-              value={country}
-              onChange={e => {
-                updateField(countryKey, e.target.value);
-                if (e.target.value !== '__custom__') updateField(customKey, '');
-              }}
-              className="input-field"
-              disabled={!committee}
-            >
-              <option value="">{committee ? `Select ${isPersonality ? 'Personality' : 'Country'}` : 'Select committee first'}</option>
-              {options.map(c => <option key={c} value={c}>{c}</option>)}
-              <option value="__custom__">Other (type your own)</option>
-            </select>
-            {errors[`${countryKey}`] && <p className="text-red-500 text-sm mt-1">{errors[`${countryKey}`]}</p>}
-          </div>
-        </div>
-        {country === '__custom__' && (
-          <div className="mt-3">
-            <label className="block text-sm font-medium text-corporate-700 mb-1">
-              {isPersonality ? 'Enter Personality Name' : 'Enter Country / Personality Name'}
-            </label>
-            <input
-              type="text"
-              value={custom}
-              onChange={e => updateField(customKey, e.target.value)}
-              className={`input-field ${errors[`${countryKey}`] && !custom.trim() ? 'border-red-500' : ''}`}
-              placeholder={isPersonality ? 'e.g., Amit Shah (BJP)' : 'e.g., South Korea'}
-            />
-            {errors[`${countryKey}`] && !custom.trim() && <p className="text-red-500 text-sm mt-1">{errors[`${countryKey}`]}</p>}
-          </div>
-        )}
-      </div>
-    );
-  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -540,21 +537,6 @@ export function RegistrationPage({ onComplete }: RegistrationPageProps) {
 
                 <div>
                   <label className="block text-sm font-medium text-corporate-700 mb-1">
-                    <Phone className="w-4 h-4 inline mr-1" />
-                    Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={e => updateField('phone', e.target.value)}
-                    className={`input-field ${errors.phone ? 'border-red-500' : ''}`}
-                    placeholder="+91 98765 43210"
-                  />
-                  {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-corporate-700 mb-1">
                     <Briefcase className="w-4 h-4 inline mr-1" />
                     MUN / Debate Experience
                   </label>
@@ -592,7 +574,7 @@ export function RegistrationPage({ onComplete }: RegistrationPageProps) {
               <p className="text-corporate-700 text-sm mb-6">
                 Select your top 3 committee and country/personality preferences. For AIPPM, choose from
                 Indian political personalities. You can also type your own country or personality by
-                selecting "Other." Each preference must be unique — no repeats.
+                selecting "Other." Each committee can only be selected once.
               </p>
 
               <div className="space-y-6">
@@ -602,6 +584,9 @@ export function RegistrationPage({ onComplete }: RegistrationPageProps) {
                   bgColor="bg-corporate-50"
                   borderColor="border-corporate-200"
                   badgeColor="text-corporate-700"
+                  formData={formData}
+                  errors={errors}
+                  updateField={updateField}
                 />
                 <PreferenceBlock
                   prefNum={2}
@@ -609,6 +594,9 @@ export function RegistrationPage({ onComplete }: RegistrationPageProps) {
                   bgColor="bg-gray-50"
                   borderColor="border-gray-200"
                   badgeColor="text-gray-600"
+                  formData={formData}
+                  errors={errors}
+                  updateField={updateField}
                 />
                 <PreferenceBlock
                   prefNum={3}
@@ -616,6 +604,9 @@ export function RegistrationPage({ onComplete }: RegistrationPageProps) {
                   bgColor="bg-gray-50"
                   borderColor="border-gray-200"
                   badgeColor="text-gray-600"
+                  formData={formData}
+                  errors={errors}
+                  updateField={updateField}
                 />
               </div>
 

@@ -36,8 +36,11 @@ export function HomePage({ onNavigate }: HomePageProps) {
             <span className="text-corporate-300">Model United Nations</span>
           </h1>
 
-          <p className="text-lg sm:text-xl text-white/80 max-w-2xl mx-auto mb-6 font-medium">
+          <p className="text-lg sm:text-xl text-white/80 max-w-2xl mx-auto mb-2 font-medium">
             AWSMUN 2026
+          </p>
+          <p className="text-base text-corporate-300 max-w-2xl mx-auto mb-6 font-medium tracking-wide">
+            Edition IV
           </p>
 
           <div className="inline-flex flex-wrap items-center justify-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2 mb-10">

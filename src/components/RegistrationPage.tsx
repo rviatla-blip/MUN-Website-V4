@@ -118,24 +118,41 @@ export function RegistrationPage({ onComplete }: RegistrationPageProps) {
         { committee: formData.pref3Committee, country: formData.pref3Country, custom: formData.pref3Custom, label: '3rd' },
       ];
 
+      const prefNumMap: Record<string, number> = { '1st': 1, '2nd': 2, '3rd': 3 };
+
       prefs.forEach((pref) => {
+        const num = prefNumMap[pref.label];
         if (!pref.committee) {
-          newErrors[`pref${pref.label === '1st' ? 1 : pref.label === '2nd' ? 2 : 3}Committee`] = `${pref.label} preference committee is required`;
+          newErrors[`pref${num}Committee`] = `${pref.label} preference committee is required`;
         }
-        if (!pref.country && !pref.custom.trim()) {
-          newErrors[`pref${pref.label === '1st' ? 1 : pref.label === '2nd' ? 2 : 3}Country`] = `${pref.label} preference country/personality is required`;
+        const countryVal = pref.country === '__custom__' ? pref.custom.trim() : pref.country;
+        if (!countryVal) {
+          newErrors[`pref${num}Country`] = `${pref.label} preference country/personality is required`;
+        }
+      });
+
+      // Check no repeated committees (each committee only once)
+      const seenCommittees: string[] = [];
+      prefs.forEach((pref) => {
+        const num = prefNumMap[pref.label];
+        if (pref.committee) {
+          if (seenCommittees.includes(pref.committee)) {
+            newErrors[`pref${num}Committee`] = 'This committee is already selected in another preference. Please choose a different committee.';
+          } else {
+            seenCommittees.push(pref.committee);
+          }
         }
       });
 
       // Check no repeated committee+country combos
       const combos: string[] = [];
-      prefs.forEach((pref, idx) => {
+      prefs.forEach((pref) => {
+        const num = prefNumMap[pref.label];
         const countryVal = pref.country === '__custom__' ? pref.custom.trim() : pref.country;
         if (pref.committee && countryVal) {
           const combo = `${pref.committee}|||${countryVal.toLowerCase()}`;
           if (combos.includes(combo)) {
-            const key = `pref${idx === 0 ? 1 : idx === 1 ? 2 : 3}Country`;
-            newErrors[key] = 'This committee and country/personality combination is already selected. Please choose a different one.';
+            newErrors[`pref${num}Country`] = 'This committee and country/personality combination is already selected. Please choose a different one.';
           } else {
             combos.push(combo);
           }
@@ -297,6 +314,10 @@ export function RegistrationPage({ onComplete }: RegistrationPageProps) {
     const options = committee ? getOptionsForCommittee(committee) : [];
     const isPersonality = committee ? isPersonalityCommittee(committee) : false;
 
+    // Committees already selected in other preference slots
+    const allCommittees = [formData.pref1Committee, formData.pref2Committee, formData.pref3Committee];
+    const usedCommittees = allCommittees.filter((c, i) => c !== '' && i !== prefNum - 1);
+
     return (
       <div className={`${bgColor} border ${borderColor} rounded-lg p-4`}>
         <span className={`text-xs font-bold uppercase tracking-wider ${badgeColor}`}>{label}</span>
@@ -313,7 +334,11 @@ export function RegistrationPage({ onComplete }: RegistrationPageProps) {
               className="input-field"
             >
               <option value="">Select Committee</option>
-              {committeeNames.map(c => <option key={c} value={c}>{c}</option>)}
+              {committeeNames.map(c => (
+                <option key={c} value={c} disabled={usedCommittees.includes(c)}>
+                  {c}{usedCommittees.includes(c) ? ' (already selected)' : ''}
+                </option>
+              ))}
             </select>
             {errors[`${committeeKey}`] && <p className="text-red-500 text-sm mt-1">{errors[`${committeeKey}`]}</p>}
           </div>
@@ -346,9 +371,10 @@ export function RegistrationPage({ onComplete }: RegistrationPageProps) {
               type="text"
               value={custom}
               onChange={e => updateField(customKey, e.target.value)}
-              className="input-field"
+              className={`input-field ${errors[`${countryKey}`] && !custom.trim() ? 'border-red-500' : ''}`}
               placeholder={isPersonality ? 'e.g., Amit Shah (BJP)' : 'e.g., South Korea'}
             />
+            {errors[`${countryKey}`] && !custom.trim() && <p className="text-red-500 text-sm mt-1">{errors[`${countryKey}`]}</p>}
           </div>
         )}
       </div>
